@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t yonjuro/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run yonjuro/react-test npm test -- --coverage
+
+after_success:
+  - docker built -t yonjuro/multi-client ./client
+  - docker built -t yonjuro/multi-nginx ./nginx
+  - docker built -t yonjuro/multi-server ./server
+  - docker built -t yonjuro/multi-worker ./worker
+  # Log in to Docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push yonjuro/multi-client
+  - docker push yonjuro/multi-nginx
+  - docker push yonjuro/multi-server
+  - docker push yonjuro/multi-worker
+  
